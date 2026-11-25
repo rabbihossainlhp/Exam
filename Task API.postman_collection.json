@@ -1,0 +1,90 @@
+{
+  "info": {
+    "name": "Task API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create task",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Finish assignment\",\n  \"status\": \"pending\",\n  \"dueDate\": \"2026-12-01T10:00:00.000Z\"\n}"
+        },
+        "url": "{{baseUrl}}/api/tasks"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns 201 Created', () => pm.response.to.have.status(201));",
+              "pm.test('Response contains task title', () => pm.expect(pm.response.json().title).to.eql('Finish assignment'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create task - invalid title",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"   \"\n}"
+        },
+        "url": "{{baseUrl}}/api/tasks"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns 400 Bad Request', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List tasks - filtered and paginated",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/tasks?page=1&limit=10&status=done"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns 200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('Response has pagination fields', () => { const body = pm.response.json(); pm.expect(body).to.have.keys('total', 'page', 'limit', 'data'); pm.expect(body.data).to.be.an('array'); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
